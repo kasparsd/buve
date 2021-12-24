@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="lv">
+<head>
+    <title>Gaisa temperatūra, mitrums un kondensāts</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        body { font: 20px/1.5 "Cambria", "Hoefler Text", "Utopia", "Liberation Serif", "Nimbus Roman No9 L Regular", "Times", "Times New Roman", serif; }
+        p, ul, ol { margin: 1.2rem 0; }
+        h1, h2, h3, h4, h5, h6 { line-height: 1.25; margin-bottom: 1.2rem; }
+        input, button { font: inherit; padding: 0 0.25rem; margin: 0; }
+        .content { max-width: 800px; margin: 0 auto; }
+    </style>
+    <script src="https://unpkg.com/vue"></script>
+    <script>
+        const A = 17.625;
+        const B = 243.12;
+
+        function surfaceTemperatureAt(airTemperature, airHumidity) {
+            return B * (Math.log(airHumidity) + ((A * airTemperature) / (B + airTemperature))) / (A - Math.log(airHumidity) - ((A * airTemperature) / (B + airTemperature)))
+        }
+
+        function airTemperatureAt(surfaceTemperature, airHumidity) {
+            return B * (((A * surfaceTemperature) / (B + surfaceTemperature)) - Math.log(airHumidity)) / (A + Math.log(airHumidity) - ((A * surfaceTemperature) / (B + surfaceTemperature)))
+        }
+
+        function airHumidityAt(airTemperature, surfaceTemperature) {
+            return Math.exp((A * surfaceTemperature) / (B + surfaceTemperature)) / Math.exp((A * airTemperature) / (B + airTemperature))
+        }
+
+        function roundTo(value, decimalPlaces) {
+            if (decimalPlaces) {
+                const rate = Math.pow(10, decimalPlaces);
+                return Math.round(value * rate) / rate;
+            }
+
+            return Math.round(value);
+        }
+    </script>
+</head>
+<body>
+    <main class="content">
+        <h1>Kāpēc uz logiem kondensējas ūdens?</h1>
+        <p>
+            Gaisam atkarībā no tā 🌡 temperatūras ir atšķirīga spēja saturēt ūdens 💦 tvaiku. Silts ☀️ gaiss var saturēt daudz vairāk ūdens kā auksts ❄️ gaiss. Piemēram, 50m<sup>2</sup> dzīvoklī ar 2,5m griestu augstumu gaisā 
+            ir 1,2 litri 💧 ūdens, ja gaisa temperatūra ir 20 grādi ar 50% relatīvo mitrumu.
+        </p>
+        <p>
+            Telpas vietās, kur ir ❄️ aukstāks, šis mitrums vairs nespēj eksistēt tvaika veidā 
+            un pārvēršas par ūdens 💦 pilieniem, tāpēc ziemā pie logiem, palodzēm un citiem 
+            aukstuma tiltiem, veidojas ūdens. Temperatūru, pie kuras tas notiek, sauc par 
+            <strong>rasas punktu</strong>.
+        </p>
+        <p>
+            Tāpēc jau minētajā dzīvoklī uz visām virsmām, kas ir aukstāka par 9 grādiem, 
+            veidosies ūdens.
+        </p>
+        <p>
+            Šis koncepts ir īpaši svarīgs māju būvniecībā mūsu klimatiskajos apstākļos, tāpēc 
+            ēku iekšpusē jāuzstāda materiālus, kas neļauj siltajam un mitrajam iekštelpu gaisam 
+            nokļūt konstrukcijās un tur kondensēties uz virsmām, kas ir aukstākas. Tā kā logu
+            stikli un rāmji ir aptuveni desmit reizes labāki siltuma vadītāji par sienām, tad 
+            svarīgi izvēlēties logus, kuru virsmas temperatūra neatdzisīs vairāk par rasas 
+            punkta temperatūru.
+       </p>
+
+        <h2>Pie kādas temperatūras veidojas kondensāts?</h2>
+        <div id="tempDue">
+            <p>
+                Ja gaisa temperatūra telpā ir <input size="2" min="0" max="50" type="number" v-model="tempAir" /> grādi 
+                un relatīvais mitrums <input size="3" min="0" max="100" type="number" v-model="rAir" />%, tad <strong>uz 
+                virsmām, kuru temperatūra ir {{ tempSurface }} grādi, kondensēsies ūdens.</strong>
+            </p>    
+        </div>
+        <script>
+            new Vue({
+                el: '#tempDue',
+                data: {
+                    tempAir: 20,
+                    rAir: 50
+                },
+                computed: {
+                    tempSurface: function () {
+                        return roundTo(surfaceTemperatureAt(this.tempAir, this.rAir / 100), 1)
+                    }
+                }
+            })
+        </script>
+
+        <h2>Pie kāda relatīvā mitruma neveidojas kondensāts?</h2>
+        <div id="tempAir">
+            <p>
+                Lai uz virsmām, kuru temperatūra ir <input size="2" min="0" max="50" type="number" v-model="tempSurface" /> grādi, 
+                nekondensētos ūdens, telpas gaisa temperatūrai ir jābūt vismaz <input min="0" max="50" size="2" type="number" v-model="tempAir" /> grādiem 
+                un mitrumam ne vairāk par {{ rAir }}%.
+            </p>
+        </div>
+        <script>
+            new Vue({
+                el: '#tempAir',
+                data: {
+                    tempSurface: 10,
+                    tempAir: 20
+                },
+                computed: {
+                    rAir: function () {
+                        return roundTo(airHumidityAt(this.tempAir, this.tempSurface) * 100)
+                    }
+                },
+                watch: {
+                    tempAir: function () {
+                        return roundTo(airTemperatureAt(this.tempSurface, this.rAir / 100))
+                    },
+                    tempSurface: function() {
+                        return roundTo(surfaceTemperatureAt(this.tempAir, this.rAir / 100))
+                    }
+                }
+            })
+        </script>
+    </main>
+</body>
+</html>
