@@ -16,6 +16,7 @@ Tāpēc jau minētajā dzīvoklī uz visām virsmām, kas ir aukstāka par 9 gr�
 
 Ja gaisa temperatūra telpā ir <input size="2" min="0" max="50" type="number" v-model="ex1_tempAir" /> grādi un relatīvais mitrums <input size="3" min="0" max="100" type="number" v-model="ex1_rAir" />%, tad **uz virsmām, kuru temperatūra ir {{ ex1_tempSurface }} grādi, kondensēsies ūdens.**
 
+<TempChart :chartdata="ex1_chartdata" />
 
 ## Pie kāda relatīvā mitruma veidojas kondensāts?
 
@@ -40,19 +41,36 @@ export default {
         ex2_tempAir: 20,
         ex2_tempSurface: 9,
     }),
+    methods: {
+        range: (size, startAt = 0) => [...Array(size).keys()].map(i => i + startAt)
+    },
     computed: {
-        ex1_tempSurface: function () {
+        ex1_chartdata () {
+            return {
+                datasets: [
+                    {
+                        label: `Data One ${ this.ex1_tempAir }`,
+                        borderColor: '#f87979',
+                        fill: false,
+                        data: this.range(5)
+                    }
+                ]
+            };
+            
+            return [ 1, 3, 8, 9, 12, 11, 8 ];
+        },
+        ex1_tempSurface () {
             return roundTo(surfaceTemperatureAt(this.ex1_tempAir, this.ex1_rAir / 100), 1)
         },
-        ex2_rAir: function () {
+        ex2_rAir () {
             return roundTo(airHumidityAt(this.ex2_tempAir, this.ex2_tempSurface) * 100)
         }
     },
     watch: {
-        ex2_tempAir: function () {
+        ex2_tempAir () {
             return roundTo(airTemperatureAt(this.ex2_tempSurface, this.ex2_rAir / 100))
         },
-        ex2_tempSurface: function() {
+        ex2_tempSurface () {
             return roundTo(surfaceTemperatureAt(this.ex2_tempAir, this.ex2_rAir / 100))
         }
     }
