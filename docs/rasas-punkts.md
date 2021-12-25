@@ -22,6 +22,7 @@ Ja gaisa temperatūra telpā ir <input size="2" min="0" max="50" type="number" v
 
 Ja gaisa temperatūra telpā ir <input min="0" max="50" size="2" type="number" v-model="ex2_tempAir" /> grādi un **relatīvais mitrums {{ ex2_rAir }}%**, tad uz virsmām, kuru temperatūra ir <input size="2" min="0" max="50" type="number" v-model="ex2_tempSurface" /> grādi, veidosies kondensāts.
 
+<TempChart :chartdata="ex2_chartdata" />
 
 ## Kā mazināt kondensāta veidošanos?
 
@@ -46,25 +47,41 @@ export default {
     },
     computed: {
         ex1_chartdata () {
+            const tempAir = this.range(11, -5)
+                    .map(offset => Math.round(this.ex1_tempAir) + offset);
+            const rhAir = tempAir.map(tempAirItem => roundTo(airHumidityAt(tempAirItem, this.ex1_tempSurface) * 100, 1))
+
             return {
+                labels: tempAir,
                 datasets: [
                     {
-                        label: `Data One ${ this.ex1_tempAir }`,
-                        borderColor: '#f87979',
-                        fill: false,
-                        data: this.range(5)
-                    }
-                ]
+                        label: `Gaisa relatīvais mitrums, kad rasas punkts ir ${ this.ex1_tempSurface } grādi`,
+                        data: rhAir,
+                    },
+                ],
             };
-            
-            return [ 1, 3, 8, 9, 12, 11, 8 ];
         },
         ex1_tempSurface () {
             return roundTo(surfaceTemperatureAt(this.ex1_tempAir, this.ex1_rAir / 100), 1)
         },
         ex2_rAir () {
             return roundTo(airHumidityAt(this.ex2_tempAir, this.ex2_tempSurface) * 100)
-        }
+        },
+        ex2_chartdata () {
+            const tempAir = this.range(11, -5)
+                    .map(offset => Math.round(this.ex2_tempAir) + offset);
+            const tempDuePoint = tempAir.map(tempAirItem => roundTo(surfaceTemperatureAt(tempAirItem, this.ex2_rAir / 100), 1))
+
+            return {
+                labels: tempAir,
+                datasets: [
+                    {
+                        label: `Gaisa un rasas punkta temperatūra, kad relatīvais mitrums ${ this.ex2_rAir }%`,
+                        data: tempDuePoint,
+                    },
+                ],
+            };
+        },
     },
     watch: {
         ex2_tempAir () {
