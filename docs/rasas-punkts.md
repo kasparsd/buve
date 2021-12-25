@@ -26,10 +26,10 @@ Ja gaisa temperatūra telpā ir <input min="0" max="50" size="2" type="number" v
 
 ## Kā mazināt kondensāta veidošanos?
 
-Lai samazinātu ūdens kondensāta veidošanos:
+Lai samazinātu ūdens kondensāta veidošanos, ir:
 
-- ir jāsamazina temperatūras starpība starp jebkuru telpas virsmu un gaisu,
-- ir jāsamazina relatīvais mitrums telpā, aizvadot to ar nosūcēju vai vēdināšanu.
+1. jāsamazina temperatūras starpība starp aukstākajām telpas virsmām un gaisu,
+2. jāsamazina relatīvais mitrums telpā.
 
 
 <script>
